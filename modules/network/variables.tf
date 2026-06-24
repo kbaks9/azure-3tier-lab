@@ -47,7 +47,17 @@ variable "prefix_data" {
   description = "Data subnet address prefix"
 }
 
-variable "security_group" {
+variable "security_group_web" {
   type        = string
-  description = "The network security group to associate with the subnet"
+  description = "The web network security group to associate with the subnet"
+}
+
+variable "security_group_app" {
+  type        = string
+  description = "The app network security group to associate with the subnet"
+}
+
+variable "security_group_data" {
+  type        = string
+  description = "The data network security group to associate with the subnet"
 }
