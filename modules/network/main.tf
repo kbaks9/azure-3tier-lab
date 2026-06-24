@@ -8,19 +8,19 @@ resource "azurerm_virtual_network" "vnet" {
   subnet {
     name             = var.subnet_web_name # subnet_web
     address_prefixes = [var.prefix_web]
-    #security_group   = azurerm_network_security_group.example.id # module.nsg.example.id (maybe?)
+    security_group   = var.security_group
   }
 
   subnet {
     name             = var.subnet_app_name # subnet_app
     address_prefixes = [var.prefix_app]
-    #security_group   = azurerm_network_security_group.example.id # module.nsg.example.id (maybe?)
+    security_group   = var.security_group
   }
 
   subnet {
     name             = var.subnet_data_name # subnet_data
     address_prefixes = [var.prefix_data]
-    #security_group   = azurerm_network_security_group.example.id # module.nsg.example.id (maybe?)
+    security_group   = var.security_group
   }
 
   tags = {
