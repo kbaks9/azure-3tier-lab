@@ -5,8 +5,8 @@ resource "azurerm_resource_group" "rg-grp" {
 
 module "network" {
   source             = "./modules/network"
-  resource_group     = var.resource_group
-  location           = var.location
+  resource_group     = azurerm_resource_group.rg-grp.name
+  location           = azurerm_resource_group.rg-grp.location
   network_name       = var.network_name
   vnet_address_space = var.vnet_address_space
 
@@ -72,8 +72,7 @@ module "nsg_app" {
   source         = "./modules/nsg"
   resource_group = azurerm_resource_group.rg-grp.name
   location       = azurerm_resource_group.rg-grp.location
-
-  nsg_name = var.nsg_app_name
+  nsg_name       = var.nsg_app_name
   rules = [
     {
       name                       = "Allow_Web_To_App" # For Web -> App subnet
@@ -93,8 +92,7 @@ module "nsg_data" {
   source         = "./modules/nsg"
   resource_group = azurerm_resource_group.rg-grp.name
   location       = azurerm_resource_group.rg-grp.location
-
-  nsg_name = var.nsg_data_name
+  nsg_name       = var.nsg_data_name
   rules = [
     {
       name                       = "Allow_App_To_Data" # Allow App traffic -> Data
@@ -109,6 +107,76 @@ module "nsg_data" {
   }]
 }
 
-# module "vm" {
-
+# locals {
+#   machines = {
+#     web01  = module.network.subnet_web_id
+#     web02  = module.network.subnet_web_id
+#     app01  = module.network.subnet_app_id
+#     app02  = module.network.subnet_app_id
+#     data01 = module.network.subnet_data_id
+#     data02 = module.network.subnet_data_id
+#   }
 # }
+
+# module "vm" {
+#   source         = "./modules/vm"
+#   resource_group = azurerm_resource_group.rg-grp.name
+#   location       = azurerm_resource_group.rg-grp.location
+#   for_each       = local.machines
+#   vm_name        = "vm-${each.key}"
+#   nic_name       = "nic-${each.key}"
+#   subnet_id      = each.value
+# }
+
+module "web_vms" {
+  source         = "./modules/vm"
+  resource_group = azurerm_resource_group.rg-grp.name
+  location       = azurerm_resource_group.rg-grp.location
+  for_each       = toset(["web01", "web02"])
+
+  nic_name  = "nic-${each.key}"
+  vm_name   = "vm-${each.key}"
+  subnet_id = module.network.subnet_web_id
+}
+
+# VS
+
+module "web_vms" {
+  source         = "./modules/vm"
+  resource_group = azurerm_resource_group.rg-grp.name
+  location       = azurerm_resource_group.rg-grp.location
+
+  for_each = {
+    web01 = true
+    web02 = false
+  }
+
+  nic_name  = "nic-${each.key}"
+  vm_name   = "vm-${each.key}"
+  subnet_id = module.network.subnet_web_id
+
+  create_public_ip = each.value
+}
+
+module "app_vms" {
+  source         = "./modules/vm"
+  resource_group = azurerm_resource_group.rg-grp.name
+  location       = azurerm_resource_group.rg-grp.location
+  for_each       = toset(["app01", "app02"])
+
+  nic_name  = "nic-${each.key}"
+  vm_name   = "vm-${each.key}"
+  subnet_id = module.network.subnet_app_id
+}
+
+
+module "data_vms" {
+  source         = "./modules/vm"
+  resource_group = azurerm_resource_group.rg-grp.name
+  location       = azurerm_resource_group.rg-grp.location
+  for_each       = toset(["data01", "data02"])
+
+  nic_name  = "nic-${each.key}"
+  vm_name   = "vm-${each.key}"
+  subnet_id = module.network.subnet_data_id
+}
