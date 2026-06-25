@@ -64,3 +64,8 @@ variable "nsg_data_name" { type = string }
 variable "my_ip" { type = string }
 
 ### VM
+
+variable "nic_name" { type = string }
+variable "nic_web_name" { type = string }
+variable "nic_app_name" { type = string }
+variable "nic_data_name" { type = string }
